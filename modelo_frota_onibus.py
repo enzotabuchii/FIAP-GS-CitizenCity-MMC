@@ -30,18 +30,15 @@ except ImportError:
 REGIOES: List[str] = ["Norte", "Sul", "Leste", "Oeste"]
 CAPACIDADE_POR_ONIBUS: int = 40
 
-# Matriz de coeficientes A (Etapa 1 - Relatório I)
 MATRIZ_A: List[List[int]] = [
-    [1, 1, 1, 1],  # Eq 1: x_N + x_S + x_L + x_O = 72
-    [1, 2, 0, 1],  # Eq 2: x_N + 2*x_S + 0*x_L + x_O = 76
-    [0, 1, 2, 0],  # Eq 3: 0*x_N + x_S + 2*x_L + 0*x_O = 52
-    [1, 0, 1, 2],  # Eq 4: x_N + 0*x_S + x_L + 2*x_O = 76
+    [1, 1, 1, 1],
+    [1, 2, 0, 1],
+    [0, 1, 2, 0],
+    [1, 0, 1, 2],
 ]
 
-# Vetor de termos independentes b (Etapa 1 - Relatório I)
 VETOR_B: List[int] = [72, 76, 52, 76]
 
-# Demanda estimada de passageiros no horário de pico (Etapa 2 - Relatório II)
 DEMANDA_PASSAGEIROS: Dict[str, int] = {
     "Norte": 560,
     "Sul": 760,
@@ -49,13 +46,11 @@ DEMANDA_PASSAGEIROS: Dict[str, int] = {
     "Oeste": 840,
 }
 
-# Matriz associada à Transformação Linear de Redistribuição M (Etapa 2)
-# Colunas j = origem [Norte, Sul, Leste, Oeste]; Linhas i = destino [Norte, Sul, Leste, Oeste]
 MATRIZ_TRANSFORMACAO_M_FRAC: List[List[Fraction]] = [
-    [Fraction(1, 1), Fraction(0, 1),  Fraction(0, 1), Fraction(2, 24)],   # Destino: Norte
-    [Fraction(0, 1), Fraction(19, 20), Fraction(0, 1), Fraction(0, 1)],   # Destino: Sul
-    [Fraction(0, 1), Fraction(1, 20),  Fraction(1, 1), Fraction(1, 24)],  # Destino: Leste
-    [Fraction(0, 1), Fraction(0, 1),  Fraction(0, 1), Fraction(21, 24)],  # Destino: Oeste
+    [Fraction(1, 1), Fraction(0, 1),  Fraction(0, 1), Fraction(2, 24)],
+    [Fraction(0, 1), Fraction(19, 20), Fraction(0, 1), Fraction(0, 1)],
+    [Fraction(0, 1), Fraction(1, 20),  Fraction(1, 1), Fraction(1, 24)],
+    [Fraction(0, 1), Fraction(0, 1),  Fraction(0, 1), Fraction(21, 24)],
 ]
 
 
@@ -98,7 +93,6 @@ def escalonar_gauss_jordan(
     for col in range(n_cols):
         if linha_pivo >= n_linhas:
             break
-        # Busca pivô não nulo
         pivo = None
         for r in range(linha_pivo, n_linhas):
             if aug[r][col] != 0:
@@ -129,7 +123,6 @@ def resolver_sistema_linear_etapa1() -> Dict[str, object]:
     aug_reduzida, posto_a, posto_ab = escalonar_gauss_jordan(MATRIZ_A, VETOR_B)
     solucao_exata = [int(aug_reduzida[i][-1]) for i in range(len(REGIOES))]
 
-    # Se NumPy estiver disponível, também valida com np.linalg.solve
     solucao_numpy = None
     if POSSUI_NUMPY:
         a_np = np.array(MATRIZ_A, dtype=float)
@@ -223,11 +216,9 @@ def analisar_demanda_e_redistribuicao_etapa2(vetor_x: List[int]) -> Dict[str, ob
             }
         )
 
-    # Aplica a transformação linear y = M * x
     vetor_y_frac = multiplicar_matriz_vetor(MATRIZ_TRANSFORMACAO_M_FRAC, vetor_x)
     vetor_y = [int(val) for val in vetor_y_frac]
 
-    # Verificação matemática das propriedades da matriz M
     somas_colunas = [
         sum(MATRIZ_TRANSFORMACAO_M_FRAC[i][j] for i in range(4))
         for j in range(4)
