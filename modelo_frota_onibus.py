@@ -54,11 +54,6 @@ MATRIZ_TRANSFORMACAO_M_FRAC: List[List[Fraction]] = [
     [Fraction(0, 1), Fraction(0, 1),  Fraction(0, 1), Fraction(21, 24)],
 ]
 
-
-# ============================================================================
-# FUNÇÕES DE ÁLGEBRA LINEAR (EXATAS E NUMÉRICAS)
-# ============================================================================
-
 def calcular_determinante(matriz: List[List[float | int | Fraction]]) -> Fraction:
     """Calcula o determinante exato de uma matriz quadrada n x n por expansão de Laplace."""
     n = len(matriz)
