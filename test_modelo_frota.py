@@ -7,6 +7,7 @@ Testes automatizados para a entrega de Modelagem Matemática e Computacional (MM
 import unittest
 from modelo_frota_onibus import (
     analisar_demanda_e_redistribuicao_etapa2,
+    avaliar_resultados,
     resolver_sistema_linear_etapa1,
 )
 
@@ -33,6 +34,14 @@ class TestModeloFrotaMMC(unittest.TestCase):
         self.assertTrue(res2["coeficientes_nao_negativos"])
         self.assertTrue(res2["preserva_frota_total"])
         self.assertTrue(res2["sem_alocacoes_negativas"])
+
+    def test_avaliacao_resultados(self) -> None:
+        aval = avaliar_resultados([12, 20, 16, 24], [14, 19, 18, 21])
+        self.assertEqual(aval["sem_vaga_antes"], 160)
+        self.assertEqual(aval["sem_vaga_depois"], 0)
+        self.assertEqual(aval["ociosas_antes"], 160)
+        self.assertEqual(aval["ociosas_depois"], 0)
+        self.assertEqual(aval["onibus_movidos"], 4)
 
 
 if __name__ == "__main__":

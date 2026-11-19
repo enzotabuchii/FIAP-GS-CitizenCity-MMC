@@ -294,3 +294,28 @@ $$y_i = \sum_{j=1}^4 m_{ij} x_j = m_{i1}x_N + m_{i2}x_S + m_{i3}x_L + m_{i4}x_O$
 Como o conjunto dos números reais não negativos $\mathbb{R}_{\ge 0}$ é fechado sob adição e multiplicação ($m_{ij} \ge 0$ e $x_j \ge 0 \implies m_{ij}x_j \ge 0 \implies \sum_{j=1}^4 m_{ij}x_j \ge 0$), conclui-se que:
 $$y_i \ge 0, \quad \forall i \in \{1, 2, 3, 4\}$$
 No caso concreto avaliado, obtemos $\mathbf{y} = [14, 19, 18, 21]^T > \mathbf{0}$, com todas as alocações inteiras, positivas e atendendo a $100\%$ da demanda em todas as regiões. $\blacksquare$
+
+---
+
+## Avaliação dos Resultados da Intervenção
+
+A contextualização do projeto pede que a equipe avalie os resultados da redistribuição. Comparando a frota atual $\mathbf{x}$ com a frota redistribuída $\mathbf{y} = M\mathbf{x}$ no horário de pico:
+
+| Indicador | Antes ($\mathbf{x}$) | Depois ($\mathbf{y}$) |
+| :--- | :---: | :---: |
+| Passageiros sem vaga (Norte + Leste) | $80 + 80 = 160$ | $0$ |
+| Vagas ociosas (Sul + Oeste) | $40 + 120 = 160$ | $0$ |
+| Maior taxa de ocupação | $116{,}7\%$ (Norte) | $100\%$ |
+| Menor taxa de ocupação | $87{,}5\%$ (Oeste) | $100\%$ |
+| Ônibus transferidos | — | $4$ de $72$ ($5{,}6\%$ da frota) |
+
+Os 160 passageiros que ficavam sem vaga correspondem exatamente às 160 vagas ociosas em outras regiões: o problema não era falta de ônibus, e sim má distribuição. Movendo apenas 4 veículos, sem comprar nenhum, toda a demanda estimada passa a ser atendida. Esses valores também são calculados pela função `avaliar_resultados` em `modelo_frota_onibus.py`.
+
+---
+
+## Limitações do Modelo
+
+1. **Matriz ajustada a este cenário.** Os coeficientes de $M$ (por exemplo, $\frac{1}{12}$ e $\frac{1}{24}$ na coluna Oeste) foram escolhidos a partir da frota atual $\mathbf{x} = [12, 20, 16, 24]^T$. A transformação continua linear, preservando o total e a não negatividade para **qualquer** $\mathbf{x} \ge \mathbf{0}$ (demonstrações da seção 2.f), mas o resultado só é **inteiro** quando as frações das colunas aplicadas à frota de cada centro resultam em números inteiros. Para outra frota (por exemplo, $x_O = 10$, que daria $\frac{10}{12}$ de ônibus), seria preciso recalcular $M$ ou arredondar o resultado, corrigindo depois o total. Por isso, o código verifica se $M\mathbf{x}$ é inteiro e avisa caso não seja.
+2. **Ocupação de 100% sem folga.** A política zera tanto o déficit quanto a ociosidade, mas não deixa margem para variações de demanda, manutenção ou atrasos. Na prática, a empresa poderia manter uma reserva técnica.
+3. **Dados simplificados.** A demanda considera um único período de pico, cada ônibus atende uma só região e não há custo de deslocamento entre centros. Os dados são hipotéticos, conforme o enunciado.
+4. **Arredondamento da necessidade.** A quantidade necessária por região é calculada com arredondamento para cima ($\lceil \text{demanda} / 40 \rceil$). Neste caso todas as divisões são exatas, mas a regra garante que nenhuma região fique sem vagas se a demanda mudar.

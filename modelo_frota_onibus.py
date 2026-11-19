@@ -17,6 +17,7 @@ automaticamente caso esteja instalado no ambiente.
 """
 
 from __future__ import annotations
+import math
 from fractions import Fraction
 from typing import Dict, List, Tuple
 
@@ -121,6 +122,8 @@ def resolver_sistema_linear_etapa1() -> Dict[str, object]:
     """Resolve o sistema matricial Ax = b da Etapa 1 e retorna diagnóstico completo."""
     det_a = calcular_determinante(MATRIZ_A)
     aug_reduzida, posto_a, posto_ab = escalonar_gauss_jordan(MATRIZ_A, VETOR_B)
+    if any(aug_reduzida[i][-1].denominator != 1 for i in range(len(REGIOES))):
+        raise ValueError("O sistema não possui solução inteira para a frota.")
     solucao_exata = [int(aug_reduzida[i][-1]) for i in range(len(REGIOES))]
 
     solucao_numpy = None
@@ -189,7 +192,8 @@ def analisar_demanda_e_redistribuicao_etapa2(vetor_x: List[int]) -> Dict[str, ob
     for idx, regiao in enumerate(REGIOES):
         passageiros = DEMANDA_PASSAGEIROS[regiao]
         atual = vetor_x[idx]
-        necessario = passageiros // CAPACIDADE_POR_ONIBUS
+        # Arredonda para cima: uma fração de ônibus exige um ônibus inteiro a mais.
+        necessario = math.ceil(passageiros / CAPACIDADE_POR_ONIBUS)
         vetor_necessidade.append(necessario)
         saldo_onibus = atual - necessario
         lugares_atuais = atual * CAPACIDADE_POR_ONIBUS
@@ -217,6 +221,11 @@ def analisar_demanda_e_redistribuicao_etapa2(vetor_x: List[int]) -> Dict[str, ob
         )
 
     vetor_y_frac = multiplicar_matriz_vetor(MATRIZ_TRANSFORMACAO_M_FRAC, vetor_x)
+    if any(val.denominator != 1 for val in vetor_y_frac):
+        raise ValueError(
+            f"A transformação gerou alocações não inteiras: {[str(v) for v in vetor_y_frac]}. "
+            "Ajuste a matriz M para a frota informada."
+        )
     vetor_y = [int(val) for val in vetor_y_frac]
 
     somas_colunas = [
@@ -239,6 +248,35 @@ def analisar_demanda_e_redistribuicao_etapa2(vetor_x: List[int]) -> Dict[str, ob
         "coeficientes_nao_negativos": coeficientes_nao_negativos,
         "preserva_frota_total": preserva_frota_total,
         "sem_alocacoes_negativas": sem_alocacoes_negativas,
+    }
+
+
+def avaliar_resultados(vetor_antes: List[int], vetor_depois: List[int]) -> Dict[str, int]:
+    """
+    Avalia a intervenção comparando antes e depois da redistribuição:
+    - passageiros sem vaga (demanda que excede a capacidade da região);
+    - vagas ociosas (capacidade que excede a demanda da região);
+    - número de ônibus que mudaram de centro operacional.
+    """
+    def sem_vaga(vetor: List[int]) -> int:
+        return sum(
+            max(0, DEMANDA_PASSAGEIROS[r] - vetor[i] * CAPACIDADE_POR_ONIBUS)
+            for i, r in enumerate(REGIOES)
+        )
+
+    def ociosas(vetor: List[int]) -> int:
+        return sum(
+            max(0, vetor[i] * CAPACIDADE_POR_ONIBUS - DEMANDA_PASSAGEIROS[r])
+            for i, r in enumerate(REGIOES)
+        )
+
+    onibus_movidos = sum(max(0, vetor_antes[i] - vetor_depois[i]) for i in range(len(REGIOES)))
+    return {
+        "sem_vaga_antes": sem_vaga(vetor_antes),
+        "sem_vaga_depois": sem_vaga(vetor_depois),
+        "ociosas_antes": ociosas(vetor_antes),
+        "ociosas_depois": ociosas(vetor_depois),
+        "onibus_movidos": onibus_movidos,
     }
 
 
@@ -311,6 +349,13 @@ def exibir_relatorio_mmc() -> None:
     print(f"  - Todos os coeficientes m_ij >= 0?                     {'SIM' if res2['coeficientes_nao_negativos'] else 'NÃO'}")
     print(f"  - Frota total preservada (soma(y) == soma(x) == 72)?   {'SIM' if res2['preserva_frota_total'] else 'NÃO'}")
     print(f"  - Nenhuma alocação negativa (y_i >= 0)?                {'SIM' if res2['sem_alocacoes_negativas'] else 'NÃO'}")
+
+    aval = avaliar_resultados(vetor_x, res2["vetor_redistribuido_y"])
+    print("\n• Avaliação dos Resultados da Intervenção:")
+    print(f"  - Passageiros sem vaga no pico: {aval['sem_vaga_antes']} -> {aval['sem_vaga_depois']}")
+    print(f"  - Vagas ociosas no pico:        {aval['ociosas_antes']} -> {aval['ociosas_depois']}")
+    print(f"  - Ônibus transferidos entre centros: {aval['onibus_movidos']} de {sum(vetor_x)} "
+          f"({aval['onibus_movidos'] / sum(vetor_x) * 100:.1f}% da frota)")
     print("=" * 88)
 
 

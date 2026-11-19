@@ -11,9 +11,19 @@ Este repositório contém a resolução completa (matemática e computacional em
 
 ---
 
+## Integrantes
+
+| Integrante | RM |
+| --- | ---: |
+| **Enzo Seiji Delgado Tabuchi** | `573156` |
+| **Luca Almeida Lucareli** | `569061` |
+| **Henrique Almeida Lucareli** | `569183` |
+
+---
+
 ## 2. Estrutura de Arquivos
 
-* [`RELATORIO_MATEMATICO_MMC.md`](RELATORIO_MATEMATICO_MMC.md): Relatório matemático detalhado respondendo passo a passo aos itens **a, b, c, d, e, f da Etapa 1** e **a, b, c, d, e, f da Etapa 2** (com escalonamento de Gauss, determinante, Teorema de Rouché-Capelli, matriz de transformação linear $M$ e demonstrações formais).
+* [`RELATORIO_MATEMATICO_MMC.md`](RELATORIO_MATEMATICO_MMC.md): Relatório matemático detalhado respondendo passo a passo aos itens **a, b, c, d, e, f da Etapa 1** e **a, b, c, d, e, f da Etapa 2** (com escalonamento de Gauss, determinante, Teorema de Rouché-Capelli, matriz de transformação linear $M$ e demonstrações formais), além da **avaliação dos resultados** da intervenção e das **limitações do modelo**.
 * [`modelo_frota_onibus.py`](modelo_frota_onibus.py): Implementação computacional completa em Python (calcula determinante, posto, escalonamento de Gauss-Jordan exato com `fractions.Fraction`, compatibilidade automática com `numpy`, verificação dos registros do Relatório I e aplicação da transformação linear $\mathbf{y} = M\mathbf{x}$).
 * [`test_modelo_frota.py`](test_modelo_frota.py): Suíte de testes unitários automatizados comprovando a exatidão matemática do modelo.
 
@@ -28,6 +38,8 @@ Este repositório contém a resolução completa (matemática e computacional em
 | **Leste** | 720 | **16 ônibus** | 640 *(112,5%)* | $-2$ ônibus | **18 ônibus** | 720 | **100,0%** |
 | **Oeste** | 840 | **24 ônibus** | 960 *(87,5%)* | $+3$ ônibus | **21 ônibus** | 840 | **100,0%** |
 | **TOTAL** | **2.880** | **72 ônibus** | **2.880** | **0** | **72 ônibus** | **2.880** | **100,0%** |
+
+**Avaliação da intervenção:** os passageiros sem vaga no pico caem de **160 para 0** e as vagas ociosas também caem de **160 para 0**, movendo apenas **4 ônibus** (5,6% da frota), sem ampliar a frota.
 
 ---
 
